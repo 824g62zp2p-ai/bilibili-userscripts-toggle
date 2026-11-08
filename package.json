@@ -1,0 +1,59 @@
+{
+  "name": "bilibili-userscripts-toggle",
+  "version": "1.10.0-us.2",
+  "description": "Safari Userscripts fork of Make-Bilibili-Great-Than-Ever-Before with per-feature in-page toggles",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/824g62zp2p-ai/bilibili-userscripts-toggle.git"
+  },
+  "homepage": "https://github.com/824g62zp2p-ai/bilibili-userscripts-toggle#readme",
+  "bugs": {
+    "url": "https://github.com/824g62zp2p-ai/bilibili-userscripts-toggle/issues"
+  },
+  "main": "./dist/bilibili-great-userscripts-toggle.user.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint --format=sukka .",
+    "build": "rollup -c rollup.config.ts --configPlugin=swc3 --bundleConfigAsCjs",
+    "sync:upstream": "node ./scripts/sync-upstream.mjs",
+    "sync:upstream:force": "node ./scripts/sync-upstream.mjs --force",
+    "install:userscripts": "node ./scripts/install-to-userscripts.mjs",
+    "smoke": "node ./scripts/smoke-check.mjs",
+    "release:local": "node ./scripts/sync-upstream.mjs && pnpm run build && node ./scripts/install-to-userscripts.mjs"
+  },
+  "keywords": [
+    "userscript",
+    "bilibili",
+    "userscripts-safari"
+  ],
+  "author": "Timmy (Userscripts toggle fork; upstream by SukkaW)",
+  "license": "MIT",
+  "dependencies": {
+    "@types/tampermonkey": "^5.5.0",
+    "fake-indexeddb": "^6.2.5",
+    "fast-percentile": "^1.0.0",
+    "flru": "^1.0.2",
+    "foxts": "^5.9.1",
+    "xbits": "^0.2.0"
+  },
+  "devDependencies": {
+    "@eslint-sukka/node": "^9.2.0",
+    "@rollup/plugin-commonjs": "^28.0.9",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-replace": "^6.0.3",
+    "@swc/core": "^1.16.18",
+    "@swc/helpers": "^0.5.23",
+    "@types/node": "^22.20.5",
+    "bumpp": "^10.4.1",
+    "eslint": "^10.12.0",
+    "eslint-config-sukka": "^9.2.0",
+    "eslint-formatter-sukka": "^9.2.0",
+    "rollup": "^4.64.7",
+    "rollup-plugin-swc3": "^0.12.1",
+    "rollup-plugin-userscript-metablock": "^0.7.1",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "pnpm@12.11.2"
+}

@@ -1,0 +1,95 @@
+import { defineConfig } from 'rollup';
+import type { RollupOptions } from 'rollup';
+
+import { swc, defineRollupSwcOption } from 'rollup-plugin-swc3';
+import commonjs from '@rollup/plugin-commonjs';
+import metablock from 'rollup-plugin-userscript-metablock';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
+
+import pkgJson from './package.json';
+import process from 'node:process';
+
+const userScriptMetaBlockConfig = {
+  file: './userscript.meta.json',
+  override: {
+    version: pkgJson.version,
+    description: pkgJson.description,
+    author: pkgJson.author
+  }
+};
+
+/** Userscripts page injection has no unsafeWindow; alias it to the page window. */
+const UNSAFE_WINDOW_BANNER = 'var unsafeWindow=window;';
+
+export default defineConfig(
+  ([
+    [
+      'bilibili-great-userscripts-toggle',
+      false
+    ],
+    [
+      'bilibili-great-userscripts-toggle.debug',
+      true
+    ]
+  ] as const).flatMap<RollupOptions>(
+    ([filename, debug]) => [
+      {
+        input: 'src/index.ts',
+        treeshake: { moduleSideEffects: id => !id.includes('/node_modules/xbits/') },
+        output: [{
+          format: 'iife',
+          file: `dist/${filename}.user.js`,
+          sourcemap: false,
+          esModule: false,
+          compact: true,
+          generatedCode: 'es2015',
+          banner: UNSAFE_WINDOW_BANNER
+        }],
+        plugins: [
+          commonjs({
+            sourceMap: false,
+            esmExternals: true
+          }),
+          nodeResolve({
+            exportConditions: ['import', 'require', 'default']
+          }),
+          replace({
+            preventAssignment: true,
+            values: {
+              'process.env.NODE_ENV': JSON.stringify('production'),
+              'process.env.DEBUG': String(debug),
+              'typeof window': JSON.stringify('object'),
+              globalThis: 'unsafeWindow'
+            }
+          }),
+          swc(defineRollupSwcOption({
+            jsc: {
+              target: 'es2022',
+              externalHelpers: true,
+              transform: {
+                optimizer: {
+                  simplify: true
+                }
+              }
+            }
+          })),
+          metablock(userScriptMetaBlockConfig)
+        ],
+        watch: process.env.WATCH
+          ? {}
+          : false,
+        external: ['typed-query-selector']
+      },
+      {
+        input: 'src/dummy.js',
+        output: [{
+          file: `dist/${filename}.meta.js`
+        }],
+        plugins: [
+          metablock(userScriptMetaBlockConfig)
+        ]
+      }
+    ]
+  )
+);
